@@ -112,7 +112,6 @@ namespace karpovich
   template< class T >
   List< T > &List< T >::operator=(const List< T > &other)
   {
-    assert(this != std::addressof(other));
     List< T > stub(other);
     swap(stub);
     return *this;
