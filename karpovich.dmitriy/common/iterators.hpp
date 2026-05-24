@@ -1,6 +1,9 @@
 #ifndef ITERATORS_HPP
 #define ITERATORS_HPP
+
+#include <iterator>
 #include "node.hpp"
+
 namespace karpovich
 {
   template< class T >
@@ -13,6 +16,12 @@ namespace karpovich
     details::Node< T > *ptr_;
 
   public:
+    using iterator_category = std::bidirectional_iterator_tag;
+    using value_type = T;
+    using difference_type = std::ptrdiff_t;
+    using pointer = T *;
+    using reference = T &;
+
     LIter(details::Node< T > *p) noexcept;
     T &operator*() const noexcept;
     T *operator->() const noexcept;
@@ -31,6 +40,12 @@ namespace karpovich
     const details::Node< T > *ptr_;
 
   public:
+    using iterator_category = std::bidirectional_iterator_tag;
+    using value_type = T;
+    using difference_type = std::ptrdiff_t;
+    using pointer = const T *;
+    using reference = const T &;
+
     LCIter(const details::Node< T > *p) noexcept;
     const T &operator*() const noexcept;
     const T *operator->() const noexcept;
