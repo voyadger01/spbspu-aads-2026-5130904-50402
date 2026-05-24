@@ -238,6 +238,26 @@ namespace karpovich
   }
 
   template< class T >
+  template< class... Args >
+  void List< T >::emplace_back(Args &&...args)
+  {
+    details::Node< T > *node = new details::Node< T >{T(std::forward< Args >(args)...), fake_, fake_->prev};
+    fake_->prev->next = node;
+    fake_->prev = node;
+    size_++;
+  }
+
+  template< class T >
+  template< class... Args >
+  void List< T >::emplace_front(Args &&...args)
+  {
+    details::Node< T > *node = new details::Node< T >{T(std::forward< Args >(args)...), fake_->next, fake_};
+    fake_->next->prev = node;
+    fake_->next = node;
+    size_++;
+  }
+
+  template< class T >
   LIter< T > List< T >::begin() noexcept
   {
     return LIter< T >{fake_->next};
