@@ -23,6 +23,16 @@ BOOST_AUTO_TEST_CASE(test_push_and_size)
   BOOST_CHECK_EQUAL(stack.size(), 2);
 }
 
+BOOST_AUTO_TEST_CASE(test_move_push)
+{
+  Stack< std::string > stack;
+  std::string str = "hello";
+
+  stack.push(std::move(str));
+
+  BOOST_CHECK_EQUAL(stack.top(), "hello");
+}
+
 BOOST_AUTO_TEST_CASE(test_top)
 {
   Stack< int > stack;
