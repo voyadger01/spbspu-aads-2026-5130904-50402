@@ -121,7 +121,6 @@ namespace karpovich
   template< class T >
   List< T > &List< T >::operator=(List< T > &&other) noexcept
   {
-    assert(this != std::addressof(other));
     swap(other);
     return *this;
   }
