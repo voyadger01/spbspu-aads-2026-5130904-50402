@@ -3,6 +3,7 @@
 
 #include <cassert>
 #include <cstddef>
+#include <iterator>
 #include <memory>
 #include "iterators.hpp"
 #include "node.hpp"
@@ -53,14 +54,25 @@ namespace karpovich
     size_t size() const noexcept;
     bool empty() const noexcept;
     void splice(LIter< T > position, List< T > &other) noexcept;
+    void splice(LIter< T > position, List< T > &&other) noexcept;
     void splice(LIter< T > position, List< T > &other, LIter< T > i) noexcept;
+    void splice(LIter< T > position, List< T > &&other, LIter< T > i) noexcept;
     void splice(LIter< T > position, List< T > &other, LIter< T > first, LIter< T > last) noexcept;
+    void splice(LIter< T > position, List< T > &&other, LIter< T > first, LIter< T > last) noexcept;
     void sort() noexcept;
+
     template< class Comparator >
     void sort(Comparator cmp) noexcept;
+
     void merge(List< T > &other) noexcept;
+    void merge(List< T > &&other) noexcept;
+
     template< class Comparator >
     void merge(List< T > &other, Comparator cmp) noexcept;
+
+    template< class Comparator >
+    void merge(List< T > &&other, Comparator cmp) noexcept;
+
     template< class Predicate >
     LIter< T > partition(Predicate pred);
   };
@@ -341,6 +353,12 @@ namespace karpovich
   }
 
   template< class T >
+  void List< T >::splice(LIter< T > position, List< T > &&other) noexcept
+  {
+    splice(position, other);
+  }
+
+  template< class T >
   void List< T >::splice(LIter< T > position, List< T > &other, LIter< T > i) noexcept
   {
     if (other.empty() || i == other.end()) {
@@ -361,6 +379,12 @@ namespace karpovich
   }
 
   template< class T >
+  void List< T >::splice(LIter< T > position, List< T > &&other, LIter< T > i) noexcept
+  {
+    splice(position, other, i);
+  }
+
+  template< class T >
   void List< T >::splice(LIter< T > position, List< T > &other, LIter< T > first, LIter< T > last) noexcept
   {
     if (first == last) {
@@ -372,10 +396,9 @@ namespace karpovich
 
     fNode->prev->next = lNode;
     lNode->prev = fNode->prev;
-    size_t count = 0;
-    for (details::Node< T > *cur = fNode; cur != lNode; cur = cur->next) {
-      ++count;
-    }
+
+    size_t count = std::distance(first, last);
+
     other.size_ -= count;
     size_ += count;
     details::Node< T > *posNode = position.ptr_;
@@ -383,6 +406,12 @@ namespace karpovich
     posNode->prev->next = fNode;
     rangeLast->next = posNode;
     posNode->prev = rangeLast;
+  }
+
+  template< class T >
+  void List< T >::splice(LIter< T > position, List< T > &&other, LIter< T > first, LIter< T > last) noexcept
+  {
+    splice(position, other, first, last);
   }
 
   template< class T >
@@ -395,6 +424,12 @@ namespace karpovich
   void List< T >::merge(List< T > &other) noexcept
   {
     merge(other, std::less< T >{});
+  }
+
+  template< class T >
+  void List< T >::merge(List< T > &&other) noexcept
+  {
+    merge(other);
   }
 
   template< class T >
@@ -449,6 +484,13 @@ namespace karpovich
     other.fake_->next = other.fake_;
     other.fake_->prev = other.fake_;
     other.size_ = 0;
+  }
+
+  template< class T >
+  template< class Comparator >
+  void List< T >::merge(List< T > &&other, Comparator cmp) noexcept
+  {
+    merge(other, cmp);
   }
 
   template< class T >
