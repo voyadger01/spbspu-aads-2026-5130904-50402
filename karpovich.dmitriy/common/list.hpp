@@ -45,6 +45,13 @@ namespace karpovich
     void push_back(const T &val);
     void push_back(T &&val);
 
+    template< class... Args >
+    LIter< T > emplace(LIter< T > pos, Args &&...args);
+    template< class... Args >
+    void emplace_front(Args &&...args);
+    template< class... Args >
+    void emplace_back(Args &&...args);
+
     void pop_front() noexcept;
     void pop_back() noexcept;
 
@@ -216,6 +223,18 @@ namespace karpovich
     fake_->next = temp->next;
     delete temp;
     size_--;
+  }
+
+  template< class T >
+  template< class... Args >
+  LIter< T > List< T >::emplace(LIter< T > pos, Args &&...args)
+  {
+    details::Node< T > *posNode = pos.ptr_;
+    details::Node< T > *newNode = new details::Node< T >{T(std::forward< Args >(args)...), posNode, posNode->prev};
+    posNode->prev->next = newNode;
+    posNode->prev = newNode;
+    size_++;
+    return LIter< T >{newNode};
   }
 
   template< class T >
