@@ -20,7 +20,7 @@ void karpovich::Graph::addVertex(const std::string &v)
     }
   }
   if (!exists) {
-    vertices.pushBack(v);
+    vertices.push_back(v);
   }
 }
 
@@ -38,10 +38,9 @@ void karpovich::Graph::removeVertex(const std::string &v)
     throw std::out_of_range("Vertex not found");
   }
   Vector< std::pair< std::string, std::string > > to_remove;
-  for (HashIter< std::pair< std::string, std::string >, List< size_t >, PairHasher< std::string >,
-                 std::equal_to< std::pair< std::string, std::string > > >
-           it = edges.begin();
-       it != edges.end(); ++it) {
+  using strp_t = std::pair< std::string, std::string >;
+  using hash_t = HashIter< strp_t, List< size_t >, PairHasher< std::string >, std::equal_to< strp_t > >;
+  for (hash_t it = edges.begin(); it != edges.end(); ++it) {
     if (((*it).first.first == v) || ((*it).first.second == v)) {
       to_remove.pushBack((*it).first);
     }
@@ -57,10 +56,10 @@ void karpovich::Graph::addEdge(const std::string &from, const std::string &to, s
   addVertex(to);
   std::pair< std::string, std::string > key(from, to);
   if (edges.has(key)) {
-    edges.get(key).pushBack(weight);
+    edges.get(key).push_back(weight);
   } else {
     List< size_t > weights;
-    weights.pushBack(weight);
+    weights.push_back(weight);
     edges.add(key, weights);
   }
 }

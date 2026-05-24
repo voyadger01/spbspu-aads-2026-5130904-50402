@@ -9,20 +9,20 @@
 
 namespace karpovich
 {
-  template < class T, class H = boost::hash2::siphash_64 >
+  template< class T, class H = boost::hash2::siphash_64 >
   struct Hasher
   {
     size_t operator()(const T &value) const;
   };
 
-  template < class T >
+  template< class T >
   struct PairHasher
   {
     size_t operator()(const std::pair< T, T > &s) const;
   };
 }
 
-template < class T, class H >
+template< class T, class H >
 size_t karpovich::Hasher< T, H >::operator()(const T &value) const
 {
   H hasher{};
@@ -30,7 +30,7 @@ size_t karpovich::Hasher< T, H >::operator()(const T &value) const
   return boost::hash2::get_integral_result< size_t >(hasher);
 }
 
-template < class T >
+template< class T >
 size_t karpovich::PairHasher< T >::operator()(const std::pair< T, T > &s) const
 {
   size_t hash = karpovich::Hasher< T >{}(s.first);

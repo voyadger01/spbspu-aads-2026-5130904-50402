@@ -303,7 +303,7 @@ void karpovich::cmdExtract(std::istream &in, std::ostream &, GraphSet &graphs)
   for (size_t i = 0; i < k; ++i) {
     std::string v;
     in >> v;
-    required.pushBack(v);
+    required.push_back(v);
   }
   for (LIter< std::string > it = required.begin(); it != required.end(); ++it) {
     bool found = false;
