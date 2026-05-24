@@ -23,6 +23,16 @@ BOOST_AUTO_TEST_CASE(test_push_and_size)
   BOOST_CHECK_EQUAL(queue.size(), 2);
 }
 
+BOOST_AUTO_TEST_CASE(test_move_push)
+{
+  Queue< std::string > queue;
+  std::string str = "hello";
+
+  queue.push(std::move(str));
+
+  BOOST_CHECK_EQUAL(queue.front(), "hello");
+}
+
 BOOST_AUTO_TEST_CASE(test_front)
 {
   Queue< int > queue;

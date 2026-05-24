@@ -3,8 +3,8 @@
 #include <istream>
 #include <ostream>
 #include <string>
-#include "stack.hpp"
 #include "queue.hpp"
+#include "stack.hpp"
 
 namespace karpovich
 {
