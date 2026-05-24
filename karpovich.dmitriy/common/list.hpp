@@ -1,10 +1,12 @@
 #ifndef LIST_HPP
 #define LIST_HPP
+
 #include <cassert>
 #include <cstddef>
 #include <memory>
 #include "iterators.hpp"
 #include "node.hpp"
+
 namespace karpovich
 {
   template< class T >
@@ -25,23 +27,29 @@ namespace karpovich
     T &back() noexcept;
     const T &front() const noexcept;
     const T &back() const noexcept;
+
     LIter< T > begin() noexcept;
     LIter< T > end() noexcept;
     LCIter< T > begin() const noexcept;
     LCIter< T > end() const noexcept;
     LCIter< T > cbegin() const noexcept;
     LCIter< T > cend() const noexcept;
+
     LIter< T > insert(LIter< T > pos, const T &value);
     LIter< T > insert(LIter< T > pos, T &&value);
     LIter< T > erase(LIter< T > pos) noexcept;
-    void pushFront(const T &val);
-    void pushFront(T &&val);
-    void pushBack(const T &val);
-    void pushBack(T &&val);
-    void popFront() noexcept;
-    void popBack() noexcept;
+
+    void push_front(const T &val);
+    void push_front(T &&val);
+    void push_back(const T &val);
+    void push_back(T &&val);
+
+    void pop_front() noexcept;
+    void pop_back() noexcept;
+
     void clear() noexcept;
     void swap(List< T > &other) noexcept;
+
     size_t size() const noexcept;
     bool empty() const noexcept;
     void splice(LIter< T > position, List< T > &other) noexcept;
@@ -75,7 +83,7 @@ namespace karpovich
     fake_->prev = fake_;
     details::Node< T > *cur = other.fake_->next;
     while (cur != other.fake_) {
-      pushBack(cur->val);
+      push_back(cur->val);
       cur = cur->next;
     }
   }
@@ -85,9 +93,7 @@ namespace karpovich
     fake_(other.fake_),
     size_(other.size_)
   {
-    other.fake_ = new details::Node< T >{T(), nullptr, nullptr};
-    other.fake_->next = other.fake_;
-    other.fake_->prev = other.fake_;
+    other.fake_ = nullptr;
     other.size_ = 0;
   }
 
@@ -104,23 +110,17 @@ namespace karpovich
   List< T > &List< T >::operator=(List< T > &&other) noexcept
   {
     assert(this != std::addressof(other));
-    details::Node< T > *newFake = new details::Node< T >{T(), nullptr, nullptr};
-    newFake->next = newFake;
-    newFake->prev = newFake;
-    clear();
-    delete fake_;
-    fake_ = other.fake_;
-    size_ = other.size_;
-    other.fake_ = newFake;
-    other.size_ = 0;
+    swap(other);
     return *this;
   }
 
   template< class T >
   List< T >::~List() noexcept
   {
-    clear();
-    delete fake_;
+    if (fake_) {
+      clear();
+      delete fake_;
+    }
   }
 
   template< class T >
@@ -132,6 +132,9 @@ namespace karpovich
   template< class T >
   void List< T >::clear() noexcept
   {
+    if (!fake_) {
+      return;
+    }
     details::Node< T > *cur = fake_->next;
     while (cur != fake_) {
       details::Node< T > *temp = cur->next;
@@ -144,7 +147,7 @@ namespace karpovich
   }
 
   template< class T >
-  void List< T >::pushBack(const T &val)
+  void List< T >::push_back(const T &val)
   {
     details::Node< T > *node = new details::Node< T >{val, fake_, fake_->prev};
     fake_->prev->next = node;
@@ -153,7 +156,7 @@ namespace karpovich
   }
 
   template< class T >
-  void List< T >::pushBack(T &&val)
+  void List< T >::push_back(T &&val)
   {
     details::Node< T > *node = new details::Node< T >{std::move(val), fake_, fake_->prev};
     fake_->prev->next = node;
@@ -162,7 +165,7 @@ namespace karpovich
   }
 
   template< class T >
-  void List< T >::pushFront(const T &val)
+  void List< T >::push_front(const T &val)
   {
     details::Node< T > *node = new details::Node< T >{val, fake_->next, fake_};
     fake_->next->prev = node;
@@ -171,7 +174,7 @@ namespace karpovich
   }
 
   template< class T >
-  void List< T >::pushFront(T &&val)
+  void List< T >::push_front(T &&val)
   {
     details::Node< T > *node = new details::Node< T >{std::move(val), fake_->next, fake_};
     fake_->next->prev = node;
@@ -180,7 +183,7 @@ namespace karpovich
   }
 
   template< class T >
-  void List< T >::popBack() noexcept
+  void List< T >::pop_back() noexcept
   {
     if (size_ == 0) {
       return;
@@ -193,7 +196,7 @@ namespace karpovich
   }
 
   template< class T >
-  void List< T >::popFront() noexcept
+  void List< T >::pop_front() noexcept
   {
     if (size_ == 0) {
       return;
