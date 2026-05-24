@@ -16,6 +16,8 @@ namespace karpovich
     T &top();
     void push(const T &value);
     void push(T &&value);
+    template< class... Args >
+    void emplace(Args &&...args);
     void pop() noexcept;
   };
 
@@ -53,6 +55,13 @@ namespace karpovich
   void Stack< T >::pop() noexcept
   {
     data_.pop_back();
+  }
+
+  template< class T >
+  template< class... Args >
+  void Stack< T >::emplace(Args &&...args)
+  {
+    data_.emplace_back(std::forward< Args >(args)...);
   }
 }
 
