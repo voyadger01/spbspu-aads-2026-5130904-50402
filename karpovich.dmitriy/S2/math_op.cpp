@@ -1,9 +1,9 @@
 #include "math_op.hpp"
-#include "stack.hpp"
 #include <climits>
 #include <cstddef>
 #include <stdexcept>
 #include <string>
+#include "stack.hpp"
 
 long long karpovich::sum(long long a, long long b)
 {
