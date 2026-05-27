@@ -13,10 +13,10 @@ void karpovich::input(std::istream &in, list_pair_t &list)
     List< size_t > numbers;
     size_t num;
     while (in >> num) {
-      numbers.pushBack(num);
+      numbers.push_back(num);
     }
     in.clear();
-    list.pushBack({name, numbers});
+    list.push_back({name, numbers});
   }
 }
 
@@ -36,11 +36,11 @@ void karpovich::transpose(const list_pair_t &list, List< List< size_t > > &data)
         for (size_t j = 0; j < i; ++j) {
           ++num_it;
         }
-        row_numbers.pushBack(*num_it);
+        row_numbers.push_back(*num_it);
       }
     }
     if (row_numbers.size() > 0) {
-      data.pushBack(row_numbers);
+      data.push_back(row_numbers);
     }
   }
 }
@@ -92,7 +92,7 @@ void karpovich::output(std::ostream &out, const list_pair_t &names, const List< 
         }
         sum += *num_it;
       }
-      sums.pushBack(sum);
+      sums.push_back(sum);
     }
     for (LIter< size_t > it = sums.begin(); it != sums.end(); ++it) {
       if (!first) {

@@ -1,8 +1,8 @@
 #include "process.hpp"
-#include "queue.hpp"
-#include "stack.hpp"
 #include <cstddef>
 #include <string>
+#include "queue.hpp"
+#include "stack.hpp"
 
 void karpovich::inputQueue(std::istream &in, Queue< Queue< std::string > > &queue)
 {

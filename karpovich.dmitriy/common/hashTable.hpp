@@ -10,8 +10,19 @@
 
 namespace karpovich
 {
+  namespace details
+  {
+    class ResizeSlots
+    {
+    public:
+      size_t operator()(size_t before) const noexcept
+      {
+        return before < 10 ? 20 : before * 2;
+      }
+    };
+  }
 
-  template < class Key, class Value, class Hash = std::hash< Key >, class Equal = std::equal_to< Key > >
+  template< class Key, class Value, class Hash = std::hash< Key >, class Equal = std::equal_to< Key > >
   class HashTable
   {
     friend class HashIter< Key, Value, Hash, Equal >;
@@ -47,42 +58,57 @@ namespace karpovich
     HCIter cbegin() const;
     HCIter cend() const;
 
+    double loadFactor() const noexcept;
+    size_t maxChainLength() const noexcept;
+    void setMaxLoadFactor(double maxLf) noexcept;
+    void setMaxChainLength(size_t maxLen) noexcept;
+    void setResizePolicy(std::function< size_t(size_t) > policy) noexcept;
+
   private:
     Vector< List< valType > > data_;
     size_t capacity_;
     size_t size_;
     Hash hasher_;
     Equal comparator_;
+    double maxLoadFactor_;
+    size_t maxChainLength_;
+    std::function< size_t(size_t) > resizePolicy_;
   };
 
 }
 
-template < class Key, class Value, class Hash, class Equal >
+template< class Key, class Value, class Hash, class Equal >
 karpovich::HashTable< Key, Value, Hash, Equal >::HashTable(size_t slots):
   data_(),
   capacity_(slots),
   size_(0),
   hasher_(Hash{}),
-  comparator_(Equal{})
+  comparator_(Equal{}),
+  maxLoadFactor_(0.75),
+  maxChainLength_(10),
+  resizePolicy_(details::ResizeSlots{})
 {
   for (size_t i = 0; i < slots; ++i) {
     data_.pushBack(List< valType >());
   }
 }
 
-template < class Key, class Value, class Hash, class Equal >
+template< class Key, class Value, class Hash, class Equal >
 karpovich::HashTable< Key, Value, Hash, Equal >::~HashTable()
 {
   clear();
 }
 
-template < class Key, class Value, class Hash, class Equal >
+template< class Key, class Value, class Hash, class Equal >
 karpovich::HashTable< Key, Value, Hash, Equal >::HashTable(const HashTable &other):
   data_(),
   capacity_(other.capacity_),
   size_(0),
   hasher_(other.hasher_),
-  comparator_(other.comparator_)
+  comparator_(other.comparator_),
+  maxLoadFactor_(other.maxLoadFactor_),
+  maxChainLength_(other.maxChainLength_),
+  resizePolicy_(other.resizePolicy_)
 {
   for (size_t i = 0; i < capacity_; ++i) {
     data_.pushBack(List< valType >());
@@ -90,25 +116,28 @@ karpovich::HashTable< Key, Value, Hash, Equal >::HashTable(const HashTable &othe
   for (size_t i = 0; i < other.capacity_; ++i) {
     const List< valType > &src = other.data_[i];
     for (LCIter< valType > it = src.cbegin(); it != src.cend(); ++it) {
-      data_[i].pushBack(*it);
+      data_[i].push_back(*it);
       ++size_;
     }
   }
 }
 
-template < class Key, class Value, class Hash, class Equal >
+template< class Key, class Value, class Hash, class Equal >
 karpovich::HashTable< Key, Value, Hash, Equal >::HashTable(HashTable &&other) noexcept:
   data_(std::move(other.data_)),
   capacity_(other.capacity_),
   size_(other.size_),
   hasher_(std::move(other.hasher_)),
-  comparator_(std::move(other.comparator_))
+  comparator_(std::move(other.comparator_)),
+  maxLoadFactor_(other.maxLoadFactor_),
+  maxChainLength_(other.maxChainLength_),
+  resizePolicy_(std::move(other.resizePolicy_))
 {
   other.capacity_ = 0;
   other.size_ = 0;
 }
 
-template < class Key, class Value, class Hash, class Equal >
+template< class Key, class Value, class Hash, class Equal >
 karpovich::HashTable< Key, Value, Hash, Equal > &
 karpovich::HashTable< Key, Value, Hash, Equal >::operator=(const HashTable &other)
 {
@@ -120,7 +149,7 @@ karpovich::HashTable< Key, Value, Hash, Equal >::operator=(const HashTable &othe
   return *this;
 }
 
-template < class Key, class Value, class Hash, class Equal >
+template< class Key, class Value, class Hash, class Equal >
 karpovich::HashTable< Key, Value, Hash, Equal > &
 karpovich::HashTable< Key, Value, Hash, Equal >::operator=(HashTable &&other) noexcept
 {
@@ -131,7 +160,7 @@ karpovich::HashTable< Key, Value, Hash, Equal >::operator=(HashTable &&other) no
   return *this;
 }
 
-template < class Key, class Value, class Hash, class Equal >
+template< class Key, class Value, class Hash, class Equal >
 void karpovich::HashTable< Key, Value, Hash, Equal >::add(Key k, Value v)
 {
   size_t idx = hasher_(k) % capacity_;
@@ -141,11 +170,23 @@ void karpovich::HashTable< Key, Value, Hash, Equal >::add(Key k, Value v)
       return;
     }
   }
-  data_[idx].pushBack(valType(k, v));
+  bool needRehash = false;
+  if (maxLoadFactor_ > 0.0 && capacity_ > 0) {
+    needRehash = (static_cast< double >(size_ + 1) / capacity_) >= maxLoadFactor_;
+  }
+  if (!needRehash && maxChainLength_ > 0) {
+    needRehash = (data_[idx].size() + 1) >= maxChainLength_;
+  }
+  if (needRehash) {
+    size_t newSlots = resizePolicy_(capacity_);
+    rehash(newSlots);
+    idx = hasher_(k) % capacity_;
+  }
+  data_[idx].push_back(valType(k, v));
   ++size_;
 }
 
-template < class Key, class Value, class Hash, class Equal >
+template< class Key, class Value, class Hash, class Equal >
 Value karpovich::HashTable< Key, Value, Hash, Equal >::drop(Key k)
 {
   size_t idx = hasher_(k) % capacity_;
@@ -160,7 +201,7 @@ Value karpovich::HashTable< Key, Value, Hash, Equal >::drop(Key k)
   throw std::out_of_range("Key not found");
 }
 
-template < class Key, class Value, class Hash, class Equal >
+template< class Key, class Value, class Hash, class Equal >
 Value &karpovich::HashTable< Key, Value, Hash, Equal >::get(Key k)
 {
   size_t idx = hasher_(k) % capacity_;
@@ -172,7 +213,7 @@ Value &karpovich::HashTable< Key, Value, Hash, Equal >::get(Key k)
   throw std::out_of_range("Key not found");
 }
 
-template < class Key, class Value, class Hash, class Equal >
+template< class Key, class Value, class Hash, class Equal >
 const Value &karpovich::HashTable< Key, Value, Hash, Equal >::get(Key k) const
 {
   size_t idx = hasher_(k) % capacity_;
@@ -185,7 +226,7 @@ const Value &karpovich::HashTable< Key, Value, Hash, Equal >::get(Key k) const
   throw std::out_of_range("Key not found");
 }
 
-template < class Key, class Value, class Hash, class Equal >
+template< class Key, class Value, class Hash, class Equal >
 bool karpovich::HashTable< Key, Value, Hash, Equal >::has(Key k) const noexcept
 {
   size_t idx = hasher_(k) % capacity_;
@@ -198,7 +239,7 @@ bool karpovich::HashTable< Key, Value, Hash, Equal >::has(Key k) const noexcept
   return false;
 }
 
-template < class Key, class Value, class Hash, class Equal >
+template< class Key, class Value, class Hash, class Equal >
 void karpovich::HashTable< Key, Value, Hash, Equal >::rehash(size_t slots)
 {
   if (slots <= capacity_) {
@@ -211,14 +252,14 @@ void karpovich::HashTable< Key, Value, Hash, Equal >::rehash(size_t slots)
   for (size_t i = 0; i < capacity_; ++i) {
     for (LIter< valType > it = data_[i].begin(); it != data_[i].end(); ++it) {
       size_t idx = hasher_((*it).first) % slots;
-      new_data[idx].pushBack(*it);
+      new_data[idx].push_back(*it);
     }
   }
   data_ = std::move(new_data);
   capacity_ = slots;
 }
 
-template < class Key, class Value, class Hash, class Equal >
+template< class Key, class Value, class Hash, class Equal >
 void karpovich::HashTable< Key, Value, Hash, Equal >::clear() noexcept
 {
   for (size_t i = 0; i < capacity_; ++i) {
@@ -227,19 +268,19 @@ void karpovich::HashTable< Key, Value, Hash, Equal >::clear() noexcept
   size_ = 0;
 }
 
-template < class Key, class Value, class Hash, class Equal >
+template< class Key, class Value, class Hash, class Equal >
 size_t karpovich::HashTable< Key, Value, Hash, Equal >::size() const noexcept
 {
   return size_;
 }
 
-template < class Key, class Value, class Hash, class Equal >
+template< class Key, class Value, class Hash, class Equal >
 bool karpovich::HashTable< Key, Value, Hash, Equal >::empty() const noexcept
 {
   return size_ == 0;
 }
 
-template < class Key, class Value, class Hash, class Equal >
+template< class Key, class Value, class Hash, class Equal >
 void karpovich::HashTable< Key, Value, Hash, Equal >::swap(HashTable &other) noexcept
 {
   data_.swap(other.data_);
@@ -249,28 +290,59 @@ void karpovich::HashTable< Key, Value, Hash, Equal >::swap(HashTable &other) noe
   std::swap(size_, other.size_);
 }
 
-template < class Key, class Value, class Hash, class Equal >
+template< class Key, class Value, class Hash, class Equal >
 karpovich::HashIter< Key, Value, Hash, Equal > karpovich::HashTable< Key, Value, Hash, Equal >::begin()
 {
   return HIter(&data_, capacity_, 0);
 }
 
-template < class Key, class Value, class Hash, class Equal >
+template< class Key, class Value, class Hash, class Equal >
 karpovich::HashIter< Key, Value, Hash, Equal > karpovich::HashTable< Key, Value, Hash, Equal >::end()
 {
   return HIter();
 }
 
-template < class Key, class Value, class Hash, class Equal >
+template< class Key, class Value, class Hash, class Equal >
 karpovich::HashConstIter< Key, Value, Hash, Equal > karpovich::HashTable< Key, Value, Hash, Equal >::cbegin() const
 {
   return HCIter(&data_, capacity_, 0);
 }
 
-template < class Key, class Value, class Hash, class Equal >
+template< class Key, class Value, class Hash, class Equal >
 karpovich::HashConstIter< Key, Value, Hash, Equal > karpovich::HashTable< Key, Value, Hash, Equal >::cend() const
 {
   return HCIter();
+}
+
+template< class Key, class Value, class Hash, class Equal >
+size_t karpovich::HashTable< Key, Value, Hash, Equal >::maxChainLength() const noexcept
+{
+  size_t maxLen = 0;
+  for (size_t i = 0; i < capacity_; ++i) {
+    size_t current = data_[i].size();
+    if (current > maxLen) {
+      maxLen = current;
+    }
+  }
+  return maxLen;
+}
+
+template< class Key, class Value, class Hash, class Equal >
+void karpovich::HashTable< Key, Value, Hash, Equal >::setMaxLoadFactor(double maxLf) noexcept
+{
+  maxLoadFactor_ = maxLf;
+}
+
+template< class Key, class Value, class Hash, class Equal >
+void karpovich::HashTable< Key, Value, Hash, Equal >::setMaxChainLength(size_t maxLen) noexcept
+{
+  maxChainLength_ = maxLen;
+}
+
+template< class Key, class Value, class Hash, class Equal >
+void karpovich::HashTable< Key, Value, Hash, Equal >::setResizePolicy(std::function< size_t(size_t) > policy) noexcept
+{
+  resizePolicy_ = policy;
 }
 
 #endif

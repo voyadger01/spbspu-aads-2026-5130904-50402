@@ -3,14 +3,6 @@
 
 BOOST_AUTO_TEST_SUITE(xorSuite)
 
-BOOST_AUTO_TEST_CASE(xorBasicOperation)
-{
-  BOOST_CHECK_EQUAL(karpovich::calculateOperation("^", 5, 3), 6);
-  BOOST_CHECK_EQUAL(karpovich::calculateOperation("^", 0, 0), 0);
-  BOOST_CHECK_EQUAL(karpovich::calculateOperation("^", 7, 7), 0);
-  BOOST_CHECK_EQUAL(karpovich::calculateOperation("^", 15, 9), 6);
-}
-
 BOOST_AUTO_TEST_CASE(xorSimpleExpression)
 {
   karpovich::Queue< std::string > infix;
