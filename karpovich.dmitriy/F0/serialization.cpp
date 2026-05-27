@@ -229,11 +229,29 @@ karpovich::project_t karpovich::deserializeProject(std::istream &in)
       if (line != "END_SCENE") {
         throw std::runtime_error("Expected END_SCENE");
       }
+      res.scene_graph_.addVertex(scene.id_);
       res.scenes_.add(scene.id_, std::move(scene));
     } else {
       throw std::runtime_error("Expected SCENE or END_PROJECT");
     }
     line = readLine(in);
+  }
+  HashTable< std::string, scene_t >::HIter it = res.scenes_.begin();
+  HashTable< std::string, scene_t >::HIter end_it = res.scenes_.end();
+  for (; it != end_it; ++it) {
+    const scene_t &scene = (*it).second;
+    std::pair< bool, size_t > from_result = res.scene_graph_.findVertex(scene.id_);
+    if (!from_result.first) {
+      continue;
+    }
+    for (size_t i = 0; i < scene.links_.getSize(); ++i) {
+      const scene_link_t &link = scene.links_[i];
+      std::pair< bool, size_t > to_result = res.scene_graph_.findVertex(link.target_);
+      if (!to_result.first) {
+        continue;
+      }
+      res.scene_graph_.addEdge(from_result.second, to_result.second, link.description_);
+    }
   }
   return res;
 }

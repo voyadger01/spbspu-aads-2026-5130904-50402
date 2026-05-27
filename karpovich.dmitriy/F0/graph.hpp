@@ -1,9 +1,9 @@
 #ifndef GRAPH_HPP
 #define GRAPH_HPP
 
+#include <Vector.hpp>
+#include <list.hpp>
 #include <string>
-#include "../common/Vector.hpp"
-#include "../common/list.hpp"
 #include "edge-vertex.hpp"
 namespace karpovich
 {

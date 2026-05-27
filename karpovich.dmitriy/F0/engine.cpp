@@ -1,6 +1,8 @@
 #include "engine.hpp"
+#include <cstddef>
 #include <fstream>
 #include <iostream>
+#include <utility>
 #include "gameTypes.hpp"
 #include "serialization.hpp"
 
@@ -402,6 +404,7 @@ void karpovich::Engine::cmdCreateScene(const Vector< std::string > &args)
     return;
   }
   active_project_.scenes_.add(args[1], scene_t{args[1], args[2], Vector< scene_link_t >(), Vector< scene_object_t >()});
+  active_project_.scene_graph_.addVertex(args[1]);
   if (active_project_.start_scene_id_.empty()) {
     active_project_.start_scene_id_ = args[1];
   }
@@ -420,6 +423,10 @@ void karpovich::Engine::cmdRemoveScene(const Vector< std::string > &args)
   if (!active_project_.scenes_.has(args[1])) {
     std::cout << "<INVALID COMMAND>\n";
     return;
+  }
+  std::pair< bool, size_t > result = active_project_.scene_graph_.findVertex(args[1]);
+  if (result.first) {
+    active_project_.scene_graph_.removeVertex(result.second);
   }
   active_project_.scenes_.drop(args[1]);
   karpovich::HashTable< std::string, scene_t >::HIter it = active_project_.scenes_.begin();
@@ -451,6 +458,11 @@ void karpovich::Engine::cmdLinkScene(const Vector< std::string > &args)
   scene_t &from = active_project_.scenes_.get(args[1]);
   std::string cond = args.getSize() > 4 ? args[4] : "";
   from.links_.pushBack(scene_link_t{args[2], args[3], cond});
+  std::pair< bool, size_t > from_result = active_project_.scene_graph_.findVertex(args[1]);
+  std::pair< bool, size_t > to_result = active_project_.scene_graph_.findVertex(args[2]);
+  if (from_result.first && to_result.first) {
+    active_project_.scene_graph_.addEdge(from_result.second, to_result.second, args[3]);
+  }
   std::cout << "<LINK CREATED: " << args[1] << " -> " << args[2] << ">\n";
 }
 
@@ -688,13 +700,20 @@ void karpovich::Engine::cmdValidate(const Vector< std::string > &)
   size_t head = 0;
   while (head < queue.getSize()) {
     const std::string &curr = queue[head++];
-    const scene_t &s = active_project_.scenes_.get(curr);
-    for (size_t i = 0; i < s.links_.getSize(); ++i) {
-      const std::string &target = s.links_[i].target_;
+    std::pair< bool, size_t > result = active_project_.scene_graph_.findVertex(curr);
+    if (!result.first) {
+      continue;
+    }
+    size_t vertex_index = result.second;
+    const List< detail::Edge< std::string > > &edges = active_project_.scene_graph_.getEdges(vertex_index);
+    auto it = edges.begin();
+    while (it != edges.end()) {
+      const std::string &target = active_project_.scene_graph_.getVertex((*it).to_).data_;
       if (!visited.has(target)) {
         visited.add(target, true);
         queue.pushBack(target);
       }
+      ++it;
     }
   }
 
