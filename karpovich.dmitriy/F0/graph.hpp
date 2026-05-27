@@ -18,7 +18,7 @@ namespace karpovich
     void removeEdge(size_t from, size_t to);
     void removeVertex(size_t index);
     bool hasVertex(const T &value) const;
-    size_t findVertex(const T &value) const;
+    std::pair< bool, size_t > findVertex(const T &value) const;
     detail::Vertex< T > &getVertex(size_t index);
     const detail::Vertex< T > &getVertex(size_t index) const;
     List< detail::Edge< T > > &getEdges(size_t index);
@@ -90,6 +90,59 @@ namespace karpovich
       }
     }
   }
+  template< class T >
+  bool Graph< T >::hasVertex(const T &value) const
+  {
+    return findVertex(value).first;
+  }
+
+  template< class T >
+  std::pair< bool, size_t > Graph< T >::findVertex(const T &value) const
+  {
+    for (size_t i = 0; i < vertices_.getSize(); ++i) {
+      if (vertices_[i].data_ == value) {
+        return std::make_pair(true, i);
+      }
+    }
+    return std::make_pair(false, 0);
+  }
+
+  template< class T >
+  detail::Vertex< T > &Graph< T >::getVertex(size_t index)
+  {
+    return vertices_[index];
+  }
+
+  template< class T >
+  const detail::Vertex< T > &Graph< T >::getVertex(size_t index) const
+  {
+    return vertices_[index];
+  }
+
+  template< class T >
+  List< detail::Edge< T > > &Graph< T >::getEdges(size_t index)
+  {
+    return vertices_[index].edges_;
+  }
+
+  template< class T >
+  const List< detail::Edge< T > > &Graph< T >::getEdges(size_t index) const
+  {
+    return vertices_[index].edges_;
+  }
+
+  template< class T >
+  size_t Graph< T >::size() const
+  {
+    return vertices_.getSize();
+  }
+
+  template< class T >
+  bool Graph< T >::empty() const
+  {
+    return vertices_.empty();
+  }
+
 }
 
 #endif
