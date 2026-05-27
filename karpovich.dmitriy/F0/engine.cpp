@@ -491,6 +491,12 @@ void karpovich::Engine::cmdUnlinkScene(const Vector< std::string > &args)
     std::cout << "<INVALID COMMAND>\n";
     return;
   }
+  std::string target = s.links_[idx].target_;
+  std::pair< bool, size_t > from_res = active_project_.scene_graph_.findVertex(args[1]);
+  std::pair< bool, size_t > to_res = active_project_.scene_graph_.findVertex(target);
+  if (from_res.first && to_res.first) {
+    active_project_.scene_graph_.removeEdge(from_res.second, to_res.second);
+  }
   s.links_.erase(idx);
   std::cout << "<LINK REMOVED: index " << idx << " from " << args[1] << ">\n";
 }

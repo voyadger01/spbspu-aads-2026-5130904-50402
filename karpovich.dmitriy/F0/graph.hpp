@@ -48,7 +48,7 @@ namespace karpovich
     if (from >= vertices_.getSize() || to >= vertices_.getSize()) {
       return;
     }
-    vertices_[from].edges_.pushBack(detail::Edge< T >(to, label));
+    vertices_[from].edges_.push_back(detail::Edge< T >(to, label));
   }
 
   template< class T >
@@ -58,7 +58,7 @@ namespace karpovich
       return;
     }
     List< detail::Edge< T > > &edges = vertices_[from].edges_;
-    LIter< T > it = edges.begin();
+    LIter< detail::Edge< T > > it = edges.begin();
     while (it != edges.end()) {
       if ((*it).to_ == to) {
         it = edges.erase(it);
@@ -72,12 +72,12 @@ namespace karpovich
   void Graph< T >::removeVertex(size_t index)
   {
     if (index >= vertices_.getSize()) {
-      return;
+      throw std::out_of_range("Invalid vertex index");
     }
-    vertices_.erase(index);
+    vertices_.erase(vertices_.begin() + index);
     for (size_t i = 0; i < vertices_.getSize(); ++i) {
       List< detail::Edge< T > > &edges = vertices_[i].edges_;
-      LIter< T > it = edges.begin();
+      LIter< detail::Edge< T > > it = edges.begin();
       while (it != edges.end()) {
         if ((*it).to_ == index) {
           it = edges.erase(it);
@@ -140,7 +140,7 @@ namespace karpovich
   template< class T >
   bool Graph< T >::empty() const
   {
-    return vertices_.empty();
+    return vertices_.isEmpty();
   }
 
 }
