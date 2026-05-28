@@ -2,7 +2,7 @@
 #define ENGINE_HPP
 
 #include <Vector.hpp>
-#include <hashTable.hpp>
+#include "cuckoo.hpp"
 #include <string>
 #include "gameTypes.hpp"
 
@@ -16,8 +16,8 @@ namespace karpovich
 
   private:
     using cmd_handler_t = void (Engine::*)(const Vector< std::string > &);
-    HashTable< std::string, cmd_handler_t > command_table_;
-    HashTable< std::string, item_template_t > item_db_;
+    CuckooTable< std::string, cmd_handler_t > command_table_;
+    CuckooTable< std::string, item_template_t > item_db_;
     Vector< std::string > connected_dbs_;
     Vector< std::string > known_projects_;
     project_t active_project_;

@@ -2,7 +2,7 @@
 #define GAME_TYPES_HPP
 
 #include <Vector.hpp>
-#include <hashTable.hpp>
+#include "cuckoo.hpp"
 #include <string>
 
 namespace karpovich
@@ -42,7 +42,7 @@ namespace karpovich
   {
     std::string title_;
     std::string start_scene_id_;
-    HashTable< std::string, scene_t > scenes_;
+    CuckooTable< std::string, scene_t > scenes_;
 
     project_t():
       title_(),
@@ -54,7 +54,7 @@ namespace karpovich
   struct save_state_t
   {
     std::string current_scene_id_;
-    HashTable< std::string, int > inventory_;
+    CuckooTable< std::string, int > inventory_;
     bool running_;
 
     save_state_t():

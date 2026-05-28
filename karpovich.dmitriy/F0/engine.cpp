@@ -207,8 +207,8 @@ void karpovich::Engine::cmdSaveProject(const Vector< std::string > &)
   serializeProject(active_project_, file);
   size_t scenes = 0;
   size_t links = 0;
-  karpovich::HashTable< std::string, scene_t >::HIter it = active_project_.scenes_.begin();
-  karpovich::HashTable< std::string, scene_t >::HIter end_it = active_project_.scenes_.end();
+  karpovich::CuckooTable< std::string, scene_t >::iter_t it = active_project_.scenes_.begin();
+  karpovich::CuckooTable< std::string, scene_t >::iter_t end_it = active_project_.scenes_.end();
   for (; it != end_it; ++it) {
     ++scenes;
     links += (*it).second.links_.getSize();
@@ -381,8 +381,8 @@ void karpovich::Engine::cmdShowDb(const Vector< std::string > &)
     return;
   }
   std::cout << "<DB CONTENTS:>\n";
-  karpovich::HashTable< std::string, item_template_t >::HIter it = item_db_.begin();
-  karpovich::HashTable< std::string, item_template_t >::HIter end_it = item_db_.end();
+  karpovich::CuckooTable< std::string, item_template_t >::iter_t it = item_db_.begin();
+  karpovich::CuckooTable< std::string, item_template_t >::iter_t end_it = item_db_.end();
   for (; it != end_it; ++it) {
     std::cout << "<" << (*it).first << " [" << (*it).second.type_ << "]: \"" << (*it).second.name_ << "\">\n";
   }
@@ -422,8 +422,8 @@ void karpovich::Engine::cmdRemoveScene(const Vector< std::string > &args)
     return;
   }
   active_project_.scenes_.drop(args[1]);
-  karpovich::HashTable< std::string, scene_t >::HIter it = active_project_.scenes_.begin();
-  karpovich::HashTable< std::string, scene_t >::HIter end_it = active_project_.scenes_.end();
+  karpovich::CuckooTable< std::string, scene_t >::iter_t it = active_project_.scenes_.begin();
+  karpovich::CuckooTable< std::string, scene_t >::iter_t end_it = active_project_.scenes_.end();
   for (; it != end_it; ++it) {
     Vector< scene_link_t > &links = (*it).second.links_;
     for (size_t i = links.getSize(); i > 0; --i) {
@@ -654,7 +654,7 @@ void karpovich::Engine::cmdShowInv(const Vector< std::string > &)
   }
   std::cout << "<INVENTORY: ";
   bool first = true;
-  for (karpovich::HashTable< std::string, int >::HIter it = game_state_.inventory_.begin();
+  for (karpovich::CuckooTable< std::string, int >::iter_t it = game_state_.inventory_.begin();
        it != game_state_.inventory_.end(); ++it) {
     if (!first) {
       std::cout << ", ";
@@ -682,7 +682,7 @@ void karpovich::Engine::cmdValidate(const Vector< std::string > &)
   }
   Vector< std::string > queue;
   queue.pushBack(start);
-  HashTable< std::string, bool > visited(16);
+  CuckooTable< std::string, bool > visited(16);
   visited.add(start, true);
 
   size_t head = 0;
@@ -701,8 +701,8 @@ void karpovich::Engine::cmdValidate(const Vector< std::string > &)
   size_t total = 0;
   size_t reachable = 0;
   bool has_errors = false;
-  karpovich::HashTable< std::string, scene_t >::HIter it = active_project_.scenes_.begin();
-  karpovich::HashTable< std::string, scene_t >::HIter end_it = active_project_.scenes_.end();
+  karpovich::CuckooTable< std::string, scene_t >::iter_t it = active_project_.scenes_.begin();
+  karpovich::CuckooTable< std::string, scene_t >::iter_t end_it = active_project_.scenes_.end();
   for (; it != end_it; ++it) {
     ++total;
     if (visited.has((*it).first)) {
@@ -717,8 +717,8 @@ void karpovich::Engine::cmdValidate(const Vector< std::string > &)
     std::cout << "<REACHABLE SCENES: " << reachable << "/" << total << ">\n";
   } else {
     std::cout << "<VALIDATION FAILED>\n";
-    karpovich::HashTable< std::string, scene_t >::HIter err_it = active_project_.scenes_.begin();
-    karpovich::HashTable< std::string, scene_t >::HIter err_end = active_project_.scenes_.end();
+    karpovich::CuckooTable< std::string, scene_t >::iter_t err_it = active_project_.scenes_.begin();
+    karpovich::CuckooTable< std::string, scene_t >::iter_t err_end = active_project_.scenes_.end();
     for (; err_it != err_end; ++err_it) {
       if (!visited.has((*err_it).first)) {
         std::cout << "<ERROR: Scene \"" << (*err_it).first << "\" is unreachable>\n";
