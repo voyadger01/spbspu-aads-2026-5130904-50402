@@ -1,13 +1,13 @@
 #ifndef GAME_TYPES_HPP
 #define GAME_TYPES_HPP
 
+#include <Vector.hpp>
+#include <hashTable.hpp>
 #include <string>
-#include "Vector.hpp"
-#include "graph.hpp"
-#include "hashTable.hpp"
 
 namespace karpovich
 {
+
   struct item_template_t
   {
     std::string key_;
@@ -43,13 +43,11 @@ namespace karpovich
     std::string title_;
     std::string start_scene_id_;
     HashTable< std::string, scene_t > scenes_;
-    Graph< std::string > scene_graph_;
 
     project_t():
       title_(),
       start_scene_id_(),
-      scenes_(16),
-      scene_graph_()
+      scenes_(16)
     {}
   };
 
@@ -65,6 +63,7 @@ namespace karpovich
       running_(false)
     {}
   };
+
 }
 
 #endif
