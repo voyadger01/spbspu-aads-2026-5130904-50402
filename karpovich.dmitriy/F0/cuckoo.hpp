@@ -138,4 +138,42 @@ karpovich::CuckooTable< Key, Value, Hash1, Hash2, Equal >::operator=(CuckooTable
   return *this;
 }
 
+template< class Key, class Value, class Hash1, class Hash2, class Equal >
+bool karpovich::CuckooTable< Key, Value, Hash1, Hash2, Equal >::empty() const noexcept
+{
+  return size_ == 0;
+}
+
+template< class Key, class Value, class Hash1, class Hash2, class Equal >
+size_t karpovich::CuckooTable< Key, Value, Hash1, Hash2, Equal >::size() const noexcept
+{
+  return size_;
+}
+
+template< class Key, class Value, class Hash1, class Hash2, class Equal >
+double karpovich::CuckooTable< Key, Value, Hash1, Hash2, Equal >::loadFactor() const noexcept
+{
+  return static_cast< double >(size_) / (capacity_ * 2);
+}
+
+template< class Key, class Value, class Hash1, class Hash2, class Equal >
+void karpovich::CuckooTable< Key, Value, Hash1, Hash2, Equal >::setMaxLoadFactor(double maxLf) noexcept
+{
+  maxLoadFactor_ = maxLf;
+}
+
+template< class Key, class Value, class Hash1, class Hash2, class Equal >
+void karpovich::CuckooTable< Key, Value, Hash1, Hash2, Equal >::setMaxKickCount(size_t maxKicks) noexcept
+{
+  maxKickCount_ = maxKicks;
+}
+
+template< class Key, class Value, class Hash1, class Hash2, class Equal >
+void karpovich::CuckooTable< Key, Value, Hash1, Hash2, Equal >::clear() noexcept
+{
+  table1_ = Vector< entryType >(capacity_);
+  table2_ = Vector< entryType >(capacity_);
+  size_ = 0;
+}
+
 #endif
