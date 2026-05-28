@@ -22,7 +22,6 @@ namespace karpovich
     using entryType = details::CuckooEntry< Key, Value >;
 
     explicit CuckooTable(size_t capacity = 16);
-    ~CuckooTable();
 
     CuckooTable(const CuckooTable &other);
     CuckooTable(CuckooTable &&other) noexcept;
@@ -56,6 +55,87 @@ namespace karpovich
     double maxLoadFactor_;
     size_t maxKickCount_;
   };
+}
+
+template< class Key, class Value, class Hash1, class Hash2, class Equal >
+karpovich::CuckooTable< Key, Value, Hash1, Hash2, Equal >::CuckooTable(size_t capacity):
+  table1_(capacity),
+  table2_(capacity),
+  capacity_(capacity),
+  size_(0),
+  hasher1_(),
+  hasher2_(),
+  comparator_(),
+  maxLoadFactor_(0.5),
+  maxKickCount_(capacity)
+{}
+
+template< class Key, class Value, class Hash1, class Hash2, class Equal >
+karpovich::CuckooTable< Key, Value, Hash1, Hash2, Equal >::CuckooTable(const CuckooTable &other):
+  table1_(other.table1_),
+  table2_(other.table2_),
+  capacity_(other.capacity_),
+  size_(other.size_),
+  hasher1_(other.hasher1_),
+  hasher2_(other.hasher2_),
+  comparator_(other.comparator_),
+  maxLoadFactor_(other.maxLoadFactor_),
+  maxKickCount_(other.maxKickCount_)
+{}
+
+template< class Key, class Value, class Hash1, class Hash2, class Equal >
+karpovich::CuckooTable< Key, Value, Hash1, Hash2, Equal >::CuckooTable(CuckooTable &&other) noexcept:
+  table1_(std::move(other.table1_)),
+  table2_(std::move(other.table2_)),
+  capacity_(other.capacity_),
+  size_(other.size_),
+  hasher1_(std::move(other.hasher1_)),
+  hasher2_(std::move(other.hasher2_)),
+  comparator_(std::move(other.comparator_)),
+  maxLoadFactor_(other.maxLoadFactor_),
+  maxKickCount_(other.maxKickCount_)
+{
+  other.capacity_ = 0;
+  other.size_ = 0;
+}
+
+template< class Key, class Value, class Hash1, class Hash2, class Equal >
+karpovich::CuckooTable< Key, Value, Hash1, Hash2, Equal > &
+karpovich::CuckooTable< Key, Value, Hash1, Hash2, Equal >::operator=(const CuckooTable &other)
+{
+  if (this != std::addressof(other)) {
+    table1_ = other.table1_;
+    table2_ = other.table2_;
+    capacity_ = other.capacity_;
+    size_ = other.size_;
+    hasher1_ = other.hasher1_;
+    hasher2_ = other.hasher2_;
+    comparator_ = other.comparator_;
+    maxLoadFactor_ = other.maxLoadFactor_;
+    maxKickCount_ = other.maxKickCount_;
+  }
+  return *this;
+}
+
+template< class Key, class Value, class Hash1, class Hash2, class Equal >
+karpovich::CuckooTable< Key, Value, Hash1, Hash2, Equal > &
+karpovich::CuckooTable< Key, Value, Hash1, Hash2, Equal >::operator=(CuckooTable &&other) noexcept
+{
+  if (this != std::addressof(other)) {
+    table1_ = std::move(other.table1_);
+    table2_ = std::move(other.table2_);
+    capacity_ = other.capacity_;
+    size_ = other.size_;
+    hasher1_ = std::move(other.hasher1_);
+    hasher2_ = std::move(other.hasher2_);
+    comparator_ = std::move(other.comparator_);
+    maxLoadFactor_ = other.maxLoadFactor_;
+    maxKickCount_ = other.maxKickCount_;
+
+    other.capacity_ = 0;
+    other.size_ = 0;
+  }
+  return *this;
 }
 
 #endif
