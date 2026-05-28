@@ -204,4 +204,32 @@ bool karpovich::CuckooTable< Key, Value, Hash1, Hash2, Equal >::has(Key k) const
   return false;
 }
 
+template< class Key, class Value, class Hash1, class Hash2, class Equal >
+Value &karpovich::CuckooTable< Key, Value, Hash1, Hash2, Equal >::get(Key k)
+{
+  size_t h1 = hasher1_(k) % capacity_;
+  size_t h2 = hasher2_(k) % capacity_;
+  if (table1_[h1].occupied_ && comparator_(table1_[h1].data_.first, k)) {
+    return table1_[h1].data_.second;
+  }
+  if (table2_[h2].occupied_ && comparator_(table2_[h2].data_.first, k)) {
+    return table2_[h2].data_.second;
+  }
+  throw std::out_of_range("Key not found");
+}
+
+template< class Key, class Value, class Hash1, class Hash2, class Equal >
+const Value &karpovich::CuckooTable< Key, Value, Hash1, Hash2, Equal >::get(Key k) const
+{
+  size_t h1 = hasher1_(k) % capacity_;
+  size_t h2 = hasher2_(k) % capacity_;
+  if (table1_[h1].occupied_ && comparator_(table1_[h1].data_.first, k)) {
+    return table1_[h1].data_.second;
+  }
+  if (table2_[h2].occupied_ && comparator_(table2_[h2].data_.first, k)) {
+    return table2_[h2].data_.second;
+  }
+  throw std::out_of_range("Key not found");
+}
+
 #endif
