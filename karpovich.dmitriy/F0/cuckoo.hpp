@@ -13,7 +13,7 @@ namespace karpovich
   template< class T >
   using eq = std::equal_to< T >;
   template< class T >
-  using hash = PairHasher< T >;
+  using hash = Hasher< T >;
   template< class Key, class Value, class Hash1 = hash< Key >, class Hash2 = std::hash< Key >, class Equal = eq< Key > >
   class CuckooTable
   {
@@ -68,8 +68,8 @@ namespace karpovich
 
 template< class Key, class Value, class Hash1, class Hash2, class Equal >
 karpovich::CuckooTable< Key, Value, Hash1, Hash2, Equal >::CuckooTable(size_t capacity):
-  table1_(capacity),
-  table2_(capacity),
+  table1_(),
+  table2_(),
   capacity_(capacity),
   size_(0),
   hasher1_(),
@@ -77,7 +77,10 @@ karpovich::CuckooTable< Key, Value, Hash1, Hash2, Equal >::CuckooTable(size_t ca
   comparator_(),
   maxLoadFactor_(0.5),
   maxKickCount_(capacity)
-{}
+{
+  table1_.resize(capacity);
+  table2_.resize(capacity);
+}
 
 template< class Key, class Value, class Hash1, class Hash2, class Equal >
 karpovich::CuckooTable< Key, Value, Hash1, Hash2, Equal >::CuckooTable(const CuckooTable &other):
@@ -180,8 +183,11 @@ void karpovich::CuckooTable< Key, Value, Hash1, Hash2, Equal >::setMaxKickCount(
 template< class Key, class Value, class Hash1, class Hash2, class Equal >
 void karpovich::CuckooTable< Key, Value, Hash1, Hash2, Equal >::clear() noexcept
 {
-  table1_ = Vector< entryType >(capacity_);
-  table2_ = Vector< entryType >(capacity_);
+  table1_ = Vector< entryType >();
+  table2_ = Vector< entryType >();
+
+  table1_.resize(capacity_);
+  table2_.resize(capacity_);
   size_ = 0;
 }
 
@@ -302,8 +308,10 @@ void karpovich::CuckooTable< Key, Value, Hash1, Hash2, Equal >::rehash(size_t ne
 {
   Vector< entryType > oldTable1 = table1_;
   Vector< entryType > oldTable2 = table2_;
-  table1_ = Vector< entryType >(newCapacity);
-  table2_ = Vector< entryType >(newCapacity);
+  table1_ = Vector< entryType >();
+  table2_ = Vector< entryType >();
+  table1_.resize(newCapacity);
+  table2_.resize(newCapacity);
   capacity_ = newCapacity;
   size_ = 0;
   maxKickCount_ = newCapacity;
