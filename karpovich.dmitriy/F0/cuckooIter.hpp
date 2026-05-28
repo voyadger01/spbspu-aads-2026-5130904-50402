@@ -1,5 +1,5 @@
-#ifndef CUCKOO_TABLE_ITERS_HPP
-#define CUCKOO_TABLE_ITERS_HPP
+#ifndef CUCKOO_ITERS_HPP
+#define CUCKOO_ITERS_HPP
 
 #include <cstddef>
 #include <utility>
@@ -99,14 +99,12 @@ void karpovich::CuckooIter< Key, Value, Hash1, Hash2, Equal >::findValid()
 {
   while (tableIdx_ < 2) {
     Vector< entryType > *current = (tableIdx_ == 0) ? table1_ : table2_;
-
     while (idx_ < capacity_) {
       if ((*current)[idx_].occupied_) {
         return;
       }
       ++idx_;
     }
-
     ++tableIdx_;
     idx_ = 0;
   }

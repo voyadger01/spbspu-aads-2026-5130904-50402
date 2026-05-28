@@ -1,12 +1,12 @@
-#ifndef CUCKOO_TABLE_HPP
-#define CUCKOO_TABLE_HPP
+#ifndef CUCKOO_HPP
+#define CUCKOO_HPP
 
 #include <cstddef>
 #include <functional>
 #include <utility>
 #include "../common/Vector.hpp"
 #include "../common/hashFunctions.hpp"
-#include "cuckooEntry.hpp"
+#include "cuckooIter.hpp"
 
 namespace karpovich
 {
@@ -39,6 +39,15 @@ namespace karpovich
     size_t size() const noexcept;
     bool empty() const noexcept;
     void swap(CuckooTable &other) noexcept;
+    using iter_t = CuckooIter< Key, Value, Hash1, Hash2, Equal >;
+    using citer_t = CuckooConstIter< Key, Value, Hash1, Hash2, Equal >;
+
+    iter_t begin() noexcept;
+    iter_t end() noexcept;
+    citer_t begin() const noexcept;
+    citer_t end() const noexcept;
+    citer_t cbegin() const noexcept;
+    citer_t cend() const noexcept;
 
     double loadFactor() const noexcept;
     void setMaxLoadFactor(double maxLf) noexcept;
@@ -309,6 +318,48 @@ void karpovich::CuckooTable< Key, Value, Hash1, Hash2, Equal >::rehash(size_t ne
       add(oldTable2[i].data_.first, oldTable2[i].data_.second);
     }
   }
+}
+
+template< class Key, class Value, class Hash1, class Hash2, class Equal >
+typename karpovich::CuckooTable< Key, Value, Hash1, Hash2, Equal >::iter_t
+karpovich::CuckooTable< Key, Value, Hash1, Hash2, Equal >::begin() noexcept
+{
+  return iter_t(std::addressof(table1_), std::addressof(table2_), capacity_, 0, 0);
+}
+
+template< class Key, class Value, class Hash1, class Hash2, class Equal >
+typename karpovich::CuckooTable< Key, Value, Hash1, Hash2, Equal >::iter_t
+karpovich::CuckooTable< Key, Value, Hash1, Hash2, Equal >::end() noexcept
+{
+  return iter_t();
+}
+
+template< class Key, class Value, class Hash1, class Hash2, class Equal >
+typename karpovich::CuckooTable< Key, Value, Hash1, Hash2, Equal >::citer_t
+karpovich::CuckooTable< Key, Value, Hash1, Hash2, Equal >::begin() const noexcept
+{
+  return citer_t(std::addressof(table1_), std::addressof(table2_), capacity_, 0, 0);
+}
+
+template< class Key, class Value, class Hash1, class Hash2, class Equal >
+typename karpovich::CuckooTable< Key, Value, Hash1, Hash2, Equal >::citer_t
+karpovich::CuckooTable< Key, Value, Hash1, Hash2, Equal >::end() const noexcept
+{
+  return citer_t();
+}
+
+template< class Key, class Value, class Hash1, class Hash2, class Equal >
+typename karpovich::CuckooTable< Key, Value, Hash1, Hash2, Equal >::citer_t
+karpovich::CuckooTable< Key, Value, Hash1, Hash2, Equal >::cbegin() const noexcept
+{
+  return citer_t(std::addressof(table1_), std::addressof(table2_), capacity_, 0, 0);
+}
+
+template< class Key, class Value, class Hash1, class Hash2, class Equal >
+typename karpovich::CuckooTable< Key, Value, Hash1, Hash2, Equal >::citer_t
+karpovich::CuckooTable< Key, Value, Hash1, Hash2, Equal >::cend() const noexcept
+{
+  return citer_t();
 }
 
 #endif
