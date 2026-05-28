@@ -176,4 +176,32 @@ void karpovich::CuckooTable< Key, Value, Hash1, Hash2, Equal >::clear() noexcept
   size_ = 0;
 }
 
+template< class Key, class Value, class Hash1, class Hash2, class Equal >
+void karpovich::CuckooTable< Key, Value, Hash1, Hash2, Equal >::swap(CuckooTable &other) noexcept
+{
+  std::swap(table1_, other.table1_);
+  std::swap(table2_, other.table2_);
+  std::swap(capacity_, other.capacity_);
+  std::swap(size_, other.size_);
+  std::swap(hasher1_, other.hasher1_);
+  std::swap(hasher2_, other.hasher2_);
+  std::swap(comparator_, other.comparator_);
+  std::swap(maxLoadFactor_, other.maxLoadFactor_);
+  std::swap(maxKickCount_, other.maxKickCount_);
+}
+
+template< class Key, class Value, class Hash1, class Hash2, class Equal >
+bool karpovich::CuckooTable< Key, Value, Hash1, Hash2, Equal >::has(Key k) const noexcept
+{
+  size_t h1 = hasher1_(k) % capacity_;
+  size_t h2 = hasher2_(k) % capacity_;
+  if (table1_[h1].occupied_ && comparator_(table1_[h1].data_.first, k)) {
+    return true;
+  }
+  if (table2_[h2].occupied_ && comparator_(table2_[h2].data_.first, k)) {
+    return true;
+  }
+  return false;
+}
+
 #endif
