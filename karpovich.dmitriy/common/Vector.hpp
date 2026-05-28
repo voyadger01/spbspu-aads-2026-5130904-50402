@@ -52,6 +52,7 @@ namespace karpovich
     void swap(Vector< T > &rhs) noexcept;
     void reserve(size_t cap);
     void shrinkToFit();
+    void resize(size_t newSize);
 
     void erase(size_t i);
     void erase(size_t beg, size_t end);
@@ -440,6 +441,24 @@ void karpovich::Vector< T >::shrinkToFit()
       capacity_ = size_;
     }
   }
+}
+
+template< class T >
+void karpovich::Vector< T >::resize(size_t newSize)
+{
+  if (newSize < size_) {
+    for (size_t i = newSize; i < size_; ++i) {
+      data_[i].~T();
+    }
+  } else if (newSize > size_) {
+    if (newSize > capacity_) {
+      reserve(newSize);
+    }
+    for (size_t i = size_; i < newSize; ++i) {
+      new (data_ + i) T();
+    }
+  }
+  size_ = newSize;
 }
 
 template< class T >
