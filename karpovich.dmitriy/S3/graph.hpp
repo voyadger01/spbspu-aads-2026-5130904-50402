@@ -3,13 +3,13 @@
 
 #include <Vector.hpp>
 #include <cstddef>
+#include <hashFunctions.hpp>
 #include <hashIters.hpp>
 #include <hashTable.hpp>
 #include <list.hpp>
 #include <stdexcept>
 #include <string>
 #include <utility>
-#include "hashFunctions.hpp"
 
 namespace karpovich
 {
