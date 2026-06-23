@@ -3,7 +3,7 @@
 
 #include <cstddef>
 #include <utility>
-#include "../common/Vector.hpp"
+#include <Vector.hpp>
 #include "cuckooEntry.hpp"
 
 namespace karpovich

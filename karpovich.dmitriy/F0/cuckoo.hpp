@@ -4,8 +4,8 @@
 #include <cstddef>
 #include <functional>
 #include <utility>
-#include "../common/Vector.hpp"
-#include "../common/hashFunctions.hpp"
+#include <Vector.hpp>
+#include <hashFunctions.hpp>
 #include "cuckooIter.hpp"
 
 namespace karpovich
