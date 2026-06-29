@@ -1,11 +1,11 @@
 #ifndef CUCKOO_HPP
 #define CUCKOO_HPP
 
+#include <Vector.hpp>
 #include <cstddef>
 #include <functional>
-#include <utility>
-#include <Vector.hpp>
 #include <hashFunctions.hpp>
+#include <utility>
 #include "cuckooIter.hpp"
 
 namespace karpovich
@@ -28,12 +28,12 @@ namespace karpovich
     CuckooTable &operator=(const CuckooTable &other);
     CuckooTable &operator=(CuckooTable &&other) noexcept;
 
-    void add(Key k, Value v);
-    Value drop(Key k);
-    Value &get(Key k);
-    const Value &get(Key k) const;
+    void add(const Key &k, const Value &v);
+    void drop(const Key &k);
+    Value &get(const Key &k);
+    const Value &get(const Key &k) const;
 
-    bool has(Key k) const noexcept;
+    bool has(const Key &k) const noexcept;
     void rehash(size_t newCapacity);
     void clear() noexcept;
     size_t size() const noexcept;
@@ -206,7 +206,7 @@ void karpovich::CuckooTable< Key, Value, Hash1, Hash2, Equal >::swap(CuckooTable
 }
 
 template< class Key, class Value, class Hash1, class Hash2, class Equal >
-bool karpovich::CuckooTable< Key, Value, Hash1, Hash2, Equal >::has(Key k) const noexcept
+bool karpovich::CuckooTable< Key, Value, Hash1, Hash2, Equal >::has(const Key &k) const noexcept
 {
   size_t h1 = hasher1_(k) % capacity_;
   size_t h2 = hasher2_(k) % capacity_;
@@ -220,7 +220,7 @@ bool karpovich::CuckooTable< Key, Value, Hash1, Hash2, Equal >::has(Key k) const
 }
 
 template< class Key, class Value, class Hash1, class Hash2, class Equal >
-Value &karpovich::CuckooTable< Key, Value, Hash1, Hash2, Equal >::get(Key k)
+Value &karpovich::CuckooTable< Key, Value, Hash1, Hash2, Equal >::get(const Key &k)
 {
   size_t h1 = hasher1_(k) % capacity_;
   size_t h2 = hasher2_(k) % capacity_;
@@ -234,7 +234,7 @@ Value &karpovich::CuckooTable< Key, Value, Hash1, Hash2, Equal >::get(Key k)
 }
 
 template< class Key, class Value, class Hash1, class Hash2, class Equal >
-const Value &karpovich::CuckooTable< Key, Value, Hash1, Hash2, Equal >::get(Key k) const
+const Value &karpovich::CuckooTable< Key, Value, Hash1, Hash2, Equal >::get(const Key &k) const
 {
   size_t h1 = hasher1_(k) % capacity_;
   size_t h2 = hasher2_(k) % capacity_;
@@ -248,7 +248,7 @@ const Value &karpovich::CuckooTable< Key, Value, Hash1, Hash2, Equal >::get(Key 
 }
 
 template< class Key, class Value, class Hash1, class Hash2, class Equal >
-void karpovich::CuckooTable< Key, Value, Hash1, Hash2, Equal >::add(Key k, Value v)
+void karpovich::CuckooTable< Key, Value, Hash1, Hash2, Equal >::add(const Key &k, const Value &v)
 {
   if (has(k)) {
     get(k) = v;
@@ -285,22 +285,23 @@ void karpovich::CuckooTable< Key, Value, Hash1, Hash2, Equal >::add(Key k, Value
 }
 
 template< class Key, class Value, class Hash1, class Hash2, class Equal >
-Value karpovich::CuckooTable< Key, Value, Hash1, Hash2, Equal >::drop(Key k)
+void karpovich::CuckooTable< Key, Value, Hash1, Hash2, Equal >::drop(const Key &k)
 {
   size_t h1 = hasher1_(k) % capacity_;
   size_t h2 = hasher2_(k) % capacity_;
-
+  bool found = false;
   if (table1_[h1].occupied_ && comparator_(table1_[h1].data_.first, k)) {
     table1_[h1].occupied_ = false;
     --size_;
-    return table1_[h1].data_.second;
-  }
-  if (table2_[h2].occupied_ && comparator_(table2_[h2].data_.first, k)) {
+    found = true;
+  } else if (table2_[h2].occupied_ && comparator_(table2_[h2].data_.first, k)) {
     table2_[h2].occupied_ = false;
     --size_;
-    return table2_[h2].data_.second;
+    found = true;
   }
-  throw std::out_of_range("Key not found");
+  if (!found) {
+    throw std::out_of_range("Key not found");
+  }
 }
 
 template< class Key, class Value, class Hash1, class Hash2, class Equal >

@@ -61,9 +61,8 @@ BOOST_AUTO_TEST_CASE(test_drop)
   ht.add("one", 1);
   ht.add("two", 2);
 
-  int val = ht.drop("one");
+  ht.drop("one");
 
-  BOOST_CHECK_EQUAL(val, 1);
   BOOST_CHECK_EQUAL(ht.size(), 1);
 
   BOOST_CHECK(!ht.has("one"));

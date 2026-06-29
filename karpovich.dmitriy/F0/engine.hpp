@@ -2,8 +2,8 @@
 #define ENGINE_HPP
 
 #include <Vector.hpp>
-#include "cuckoo.hpp"
 #include <string>
+#include "cuckoo.hpp"
 #include "gameTypes.hpp"
 
 namespace karpovich

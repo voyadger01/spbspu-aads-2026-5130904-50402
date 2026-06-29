@@ -170,8 +170,8 @@ karpovich::scene_t karpovich::deserializeScene(std::istream &in)
 void karpovich::serializeProject(const project_t &project, std::ostream &out)
 {
   out << "PROJECT \"" << project.title_ << "\" " << project.start_scene_id_ << "\n";
-  for (karpovich::CuckooTable< std::string, scene_t >::citer_t it = project.scenes_.cbegin(); it != project.scenes_.cend();
-       ++it) {
+  using tbl_t = karpovich::CuckooTable< std::string, scene_t >;
+  for (tbl_t::citer_t it = project.scenes_.cbegin(); it != project.scenes_.cend(); ++it) {
     serializeScene((*it).second, out);
   }
   out << "END_PROJECT\n";
@@ -241,8 +241,8 @@ karpovich::project_t karpovich::deserializeProject(std::istream &in)
 void karpovich::serializeSave(const save_state_t &state, std::ostream &out)
 {
   out << "SAVE " << state.current_scene_id_ << "\n";
-  for (karpovich::CuckooTable< std::string, int >::citer_t it = state.inventory_.cbegin(); it != state.inventory_.cend();
-       ++it) {
+  using tbl_t = karpovich::CuckooTable< std::string, int >;
+  for (tbl_t::citer_t it = state.inventory_.cbegin(); it != state.inventory_.cend(); ++it) {
     out << "INV " << (*it).first << " " << (*it).second << "\n";
   }
   out << "END_SAVE\n";

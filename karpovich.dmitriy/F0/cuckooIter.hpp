@@ -1,9 +1,9 @@
 #ifndef CUCKOO_ITERS_HPP
 #define CUCKOO_ITERS_HPP
 
+#include <Vector.hpp>
 #include <cstddef>
 #include <utility>
-#include <Vector.hpp>
 #include "cuckooEntry.hpp"
 
 namespace karpovich
